@@ -21,11 +21,14 @@ const inputSchemes: { [key: string]: InputScheme } = {
 
 function RegistrationForm() {
   const [inputs, setInputs] = useState(inputSchemes);
-  const [statusMessage, setStatusMessage] = useState('');
+  const [statusMessage, setStatusMessage] = useState<string>('');
   const validation = useValidation(inputs);
 
   const [formState, formAction] = useFormState(
-    (prevState: StatusMessage, formData: FormData) => signUp(formData),
+    async (state: { message?: string }, formData: FormData) => {
+      const result = await signUp(formData);
+      return result || { message: '' };
+    },
     { message: '' }
   );
 
@@ -50,7 +53,9 @@ function RegistrationForm() {
   }, [validation]);
 
   useEffect(() => {
-    setStatusMessage(formState.message);
+    if (formState && formState.message) {
+      setStatusMessage(formState.message);
+    }
   }, [formState]);
 
   return (

@@ -2,10 +2,10 @@
 
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { type ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { useFormState } from 'react-dom';
 
-import { signIn } from '@/actions/auth';
+import { signIn } from '@/actions/auth'; // Certifique-se de que o caminho está correto
 import { SubmitButton } from '@/components/Buttons';
 import InputGroup from '@/components/Forms/InputGroup';
 import { MainForm, StatusContainer } from '@/components/styled';
@@ -20,22 +20,26 @@ const inputSchemes: { [key: string]: InputScheme } = {
 function LoginForm() {
   const path = usePathname();
   const [inputs, setInputs] = useState(inputSchemes);
-  const [statusMessage, setStatusMessage] = useState('');
+  const [statusMessage, setStatusMessage] = useState<string>('');
   const validation = useValidation(inputs);
 
+  // useFormState com ação de login
   const [formState, formAction] = useFormState(
-    (prevState: StatusMessage, formData: FormData) => signIn(formData, path),
+    async (state: { message?: string }, formData: FormData) => {
+      const result = await signIn(formData, path);
+      return result || { message: '' };
+    },
     { message: '' }
   );
 
-  // Input handler
+  // Manipulador de mudança de input
   const handleChange = ({ target: { name, value } }: ChangeEvent<HTMLInputElement>) => {
     const newInputs = { ...inputs };
     newInputs[name].value = value;
     setInputs(newInputs);
   };
 
-  // Displays a status message to the user
+  // Exibe uma mensagem de status para o usuário
   useEffect(() => {
     if (typeof validation === 'string') {
       setStatusMessage(validation);
@@ -45,7 +49,7 @@ function LoginForm() {
   }, [validation]);
 
   useEffect(() => {
-    setStatusMessage(formState.message);
+    setStatusMessage(formState?.message ?? '');
   }, [formState]);
 
   return (
