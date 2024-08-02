@@ -29,18 +29,17 @@ export async function GET(request: Request) {
     );
 
     try {
+      await supabase.auth.signOut();
       const { error } = await supabase.auth.exchangeCodeForSession(code);
 
       if (error) {
         console.error("Error exchanging code for session:", error);
-        return NextResponse.redirect(`${origin}/auth/auth-code-error`);
       }
 
       // Se bem-sucedido, redirecione para a próxima página
       return NextResponse.redirect(`${origin}${next}`);
     } catch (error) {
       console.error("Unexpected error during authentication:", error);
-      return NextResponse.redirect(`${origin}/auth/auth-code-error`);
     }
   }
 
