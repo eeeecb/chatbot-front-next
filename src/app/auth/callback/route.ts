@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { type CookieOptions, createServerClient } from '@supabase/ssr';
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
+  const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   const next = searchParams.get('next') ?? '/';
 
@@ -29,25 +29,21 @@ export async function GET(request: Request) {
     );
 
     try {
-      // Clear any existing session
-      await supabase.auth.signOut();
-
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
 
       if (error) {
         console.error("Error exchanging code for session:", error);
-        return NextResponse.redirect(new URL('/auth/auth-code-error', request.url));
+        return NextResponse.redirect(`${origin}/auth/auth-code-error`);
       }
 
-      // If successful, redirect to the next page
-      return NextResponse.redirect(new URL(next, request.url));
-
+      // Se bem-sucedido, redirecione para a próxima página
+      return NextResponse.redirect(`${origin}${next}`);
     } catch (error) {
       console.error("Unexpected error during authentication:", error);
-      return NextResponse.redirect(new URL('/auth/auth-code-error', request.url));
+      return NextResponse.redirect(`${origin}/auth/auth-code-error`);
     }
   }
 
-  // If no code is present, redirect to the home page or an error page
-  return NextResponse.redirect(new URL('/', request.url));
+  // Se não houver código, redirecione para a página inicial
+  return NextResponse.redirect(`${origin}`);
 }
