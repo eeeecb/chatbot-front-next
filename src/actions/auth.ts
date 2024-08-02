@@ -96,7 +96,7 @@ export async function signInWithGoogle(path: string): Promise<{ message?: string
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback?next=${
+      redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback${
         path === '/login' ? '/' : path
       }`,
     },
@@ -146,8 +146,6 @@ export async function signUp(formData: FormData): Promise<{ message?: string } |
   revalidatePath('/', 'layout');
   redirect('/');
 }
-
-// pages/api/auth/callback.ts
 
 export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
   const supabase = createClient();
