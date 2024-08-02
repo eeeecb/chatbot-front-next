@@ -1,8 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
-export const updateSession = async (request: NextRequest) => {
-  // Create an unmodified response
+export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -18,16 +17,10 @@ export const updateSession = async (request: NextRequest) => {
           return request.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          // If the cookie is updated, update the cookies for the request and response
           request.cookies.set({
             name,
             value,
             ...options,
-          });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
           });
           response.cookies.set({
             name,
@@ -36,20 +29,12 @@ export const updateSession = async (request: NextRequest) => {
           });
         },
         remove(name: string, options: CookieOptions) {
-          // If the cookie is removed, update the cookies for the request and response
-          request.cookies.set({
+          request.cookies.delete({
             name,
-            value: '',
             ...options,
           });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          });
-          response.cookies.set({
+          response.cookies.delete({
             name,
-            value: '',
             ...options,
           });
         },
@@ -57,9 +42,20 @@ export const updateSession = async (request: NextRequest) => {
     }
   );
 
-  // This will refresh session if expired - required for Server Components
-  // https://supabase.com/docs/guides/auth/server-side/nextjs
   await supabase.auth.getUser();
 
   return response;
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    '/((?!_next/static|_next/image|favicon.ico|public).*)',
+  ],
 };
