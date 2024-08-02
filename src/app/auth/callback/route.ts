@@ -28,8 +28,9 @@ export async function GET(request: Request) {
       }
     );
 
-    try {
+    if (code) {
       await supabase.auth.signOut();
+
       const { error } = await supabase.auth.exchangeCodeForSession(code);
 
       if (error) {
@@ -38,8 +39,6 @@ export async function GET(request: Request) {
 
       // Se bem-sucedido, redirecione para a próxima página
       return NextResponse.redirect(`${origin}${next}`);
-    } catch (error) {
-      console.error("Unexpected error during authentication:", error);
     }
   }
 
