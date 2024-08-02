@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
-export async function middleware(request: NextRequest) {
+export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -45,6 +45,10 @@ export async function middleware(request: NextRequest) {
   await supabase.auth.getUser();
 
   return response;
+}
+
+export async function middleware(request: NextRequest) {
+  return await updateSession(request);
 }
 
 export const config = {
