@@ -1,5 +1,7 @@
 import styled, { css } from 'styled-components';
 
+import { mediaQueries } from '@/utils/mediaQueries';
+
 export const Button = styled.button`
   align-items: center;
   background-color: transparent;
@@ -34,7 +36,7 @@ export const AltButton = styled(Button)`
     right: 20px;
   }
 
-  @media screen and (width <= 1440px) {
+  ${mediaQueries.laptopL} {
     border: unset;
     border-radius: unset;
     height: 40px;
@@ -52,6 +54,7 @@ export const DialogButton = styled(Button)<{ $width?: string }>`
   border: 1px solid var(--clr-a);
   border-radius: 4px;
   height: 40px;
+  padding: 0 10px;
   transition: background-color 200ms ease;
   width: ${({ $width }) => $width ?? '60px'};
 
