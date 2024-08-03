@@ -3,6 +3,8 @@ import type { NextRequest } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -47,7 +49,13 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
+
+  // Adicione aqui qualquer lógica adicional que você precisa para rotas protegidas
+  // Por exemplo:
+  // if (!session && pathname.startsWith('/protected')) {
+  //   return NextResponse.redirect(new URL('/login', request.url));
+  // }
 
   return response;
 }
