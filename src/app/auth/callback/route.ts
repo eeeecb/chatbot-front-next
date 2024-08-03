@@ -28,11 +28,11 @@ export async function GET(request: Request) {
   );
 
   if (code) {
-
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+      // Decodifica o parâmetro 'next' antes de usá-lo no redirecionamento
+      return NextResponse.redirect(`${origin}${decodeURIComponent(next)}`);
     }
   }
 
