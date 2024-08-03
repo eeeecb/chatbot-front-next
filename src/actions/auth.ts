@@ -96,9 +96,7 @@ export async function signInWithGoogle(path: string): Promise<{ message?: string
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback${
-        path === '/login' ? '/' : path
-      }`,
+      redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback?next=${encodeURIComponent(path)}`,
     },
   });
 
@@ -106,8 +104,11 @@ export async function signInWithGoogle(path: string): Promise<{ message?: string
     return { message: error.message };
   }
 
-  redirect(data.url);
+  if (data?.url) {
+    window.location.href = data.url;
+  }
 }
+
 
 export async function signOut(): Promise<{ message?: string } | void> {
   const supabase = createClient();

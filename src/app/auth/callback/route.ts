@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { type CookieOptions, createServerClient } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -21,18 +21,21 @@ export async function GET(request: Request) {
           cookieStore.set({ name, value, ...options });
         },
         remove(name: string, options: CookieOptions) {
-          cookieStore.delete({ name, ...options });
+          cookieStore.set({ name, value: '', ...options, maxAge: 0 });
         },
       },
     }
   );
 
   if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    try {
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error) {
-      // Decodifica o parâmetro 'next' antes de usá-lo no redirecionamento
-      return NextResponse.redirect(`${origin}${decodeURIComponent(next)}`);
+      if (!error) {
+        return NextResponse.redirect(`${origin}${decodeURIComponent(next)}`);
+      }
+    } catch (error) {
+      console.error('Error during code exchange:', error);
     }
   }
 
