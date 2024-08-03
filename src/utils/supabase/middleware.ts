@@ -1,10 +1,7 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
+export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -32,34 +29,37 @@ export async function middleware(request: NextRequest) {
           });
         },
         remove(name: string, options: CookieOptions) {
-          request.cookies.set({
+          request.cookies.delete({
             name,
-            value: '',
             ...options,
-            maxAge: 0,
           });
-          response.cookies.set({
+          response.cookies.delete({
             name,
-            value: '',
             ...options,
-            maxAge: 0,
           });
         },
       },
     }
   );
 
-  const { data: { session } } = await supabase.auth.getSession();
-
-  // Adicione aqui qualquer lógica adicional que você precisa para rotas protegidas
-  // Por exemplo:
-  // if (!session && pathname.startsWith('/protected')) {
-  //   return NextResponse.redirect(new URL('/login', request.url));
-  // }
+  await supabase.auth.getUser();
 
   return response;
 }
 
+export async function middleware(request: NextRequest) {
+  return await updateSession(request);
+}
+
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    '/((?!_next/static|_next/image|favicon.ico|public).*)',
+  ],
 };
